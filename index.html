@@ -1,0 +1,607 @@
+<title>Assistente Ranny Banana</title>
+<style>
+  :root {
+    --ivory: #FFFBEF;
+    --paper: #FFF6DD;
+    --ink: #3D2B1F;
+    --ink-soft: #6B5644;
+    --caption: #9C8B78;
+    --yellow: #FFC93C;
+    --yellow-deep: #E8A415;
+    --pink: #E8577A;
+    --tan: #FFE39A;
+    --bubble-bot: #FFFFFF;
+    --bubble-user: #FFE39A;
+    --line: #F0E4C8;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ivory: #241A12;
+      --paper: #2C2018;
+      --ink: #F6EEDD;
+      --ink-soft: #D8C7AE;
+      --caption: #A6957E;
+      --yellow: #FFC93C;
+      --yellow-deep: #E8A415;
+      --pink: #F17E97;
+      --tan: #4A3A22;
+      --bubble-bot: #34281C;
+      --bubble-user: #4A3A22;
+      --line: #43341F;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ivory: #241A12;
+    --paper: #2C2018;
+    --ink: #F6EEDD;
+    --ink-soft: #D8C7AE;
+    --caption: #A6957E;
+    --yellow: #FFC93C;
+    --yellow-deep: #E8A415;
+    --pink: #F17E97;
+    --tan: #4A3A22;
+    --bubble-bot: #34281C;
+    --bubble-user: #4A3A22;
+    --line: #43341F;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ivory);
+    color: var(--ink);
+    font-family: 'Work Sans', system-ui, sans-serif;
+    padding-inline: 16px;
+    padding-block: 32px;
+    display: flex;
+    justify-content: center;
+  }
+  a { color: var(--pink); }
+
+  .page {
+    width: 100%;
+    max-width: 980px;
+    display: grid;
+    grid-template-columns: minmax(0, 340px) minmax(260px, 1fr);
+    gap: 40px;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .page { grid-template-columns: 1fr; justify-items: center; }
+  }
+
+  .intro { display: flex; flex-direction: column; gap: 16px; padding-top: 12px; }
+  .eyebrow {
+    display: inline-flex; align-self: flex-start;
+    font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 12.5px;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    background: var(--yellow); color: var(--ink);
+    padding: 6px 14px; border-radius: 100px;
+  }
+  .intro h1 {
+    font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 28px;
+    line-height: 1.2; margin: 0; text-wrap: balance;
+  }
+  .intro p { margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--ink-soft); max-width: 42ch; }
+  .intro .note {
+    font-size: 13px; color: var(--caption); border-top: 1px solid var(--line);
+    padding-top: 14px; margin-top: 4px; line-height: 1.55;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .chip {
+    font-family: 'Work Sans', sans-serif; font-size: 13px; font-weight: 500;
+    background: var(--paper); border: 1px solid var(--line); color: var(--ink);
+    padding: 8px 13px; border-radius: 100px; cursor: pointer;
+    transition: background .15s ease, transform .1s ease;
+  }
+  .chip:hover { background: var(--tan); }
+  .chip:active { transform: scale(0.97); }
+  .chip:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+
+  .phone {
+    width: 100%; max-width: 360px;
+    background: var(--ink); border-radius: 32px; padding: 12px;
+    box-shadow: 0 24px 48px -20px rgba(61,43,31,0.4);
+    margin-inline: auto;
+  }
+  .screen {
+    background: var(--paper); border-radius: 22px; overflow: hidden;
+    height: 620px; display: flex; flex-direction: column;
+  }
+  .chat-header {
+    background: var(--yellow); color: var(--ink);
+    padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+    flex-shrink: 0;
+  }
+  .avatar {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--ink);
+    color: var(--yellow); display: flex; align-items: center; justify-content: center;
+    font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 15px; flex-shrink: 0;
+  }
+  .chat-header .who { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 14.5px; }
+  .chat-header .status { font-size: 11px; opacity: 0.75; display: flex; align-items: center; gap: 5px; }
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: #2FA84F; display: inline-block; }
+
+  .messages {
+    flex: 1 1 auto; overflow-y: auto; padding: 16px; display: flex;
+    flex-direction: column; gap: 9px; scroll-behavior: smooth;
+  }
+  .msg {
+    max-width: 82%; padding: 9px 12px; border-radius: 14px; font-size: 13px;
+    line-height: 1.45; white-space: pre-line;
+  }
+  .msg.bot { align-self: flex-start; background: var(--bubble-bot); border-radius: 14px 14px 14px 3px; box-shadow: 0 1px 1px rgba(61,43,31,0.06); }
+  .msg.user { align-self: flex-end; background: var(--bubble-user); border-radius: 14px 14px 3px 14px; }
+  .msg.typing { display: flex; gap: 4px; align-items: center; padding: 11px 14px; }
+  .typing span {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--caption);
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .typing span:nth-child(2) { animation-delay: .15s; }
+  .typing span:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); opacity: .5; } 30% { transform: translateY(-3px); opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .typing span { animation: none; opacity: .8; } }
+
+  .suggestions {
+    display: flex; gap: 6px; overflow-x: auto; padding: 8px 12px;
+    border-top: 1px solid var(--line); flex-shrink: 0;
+  }
+  .suggestions::-webkit-scrollbar { display: none; }
+  .sugg {
+    flex-shrink: 0; font-size: 12px; font-weight: 500; color: var(--ink);
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 7px 11px; border-radius: 100px; cursor: pointer; white-space: nowrap;
+  }
+  .sugg:hover { background: var(--tan); }
+  .sugg:focus-visible { outline: 2px solid var(--pink); outline-offset: 1px; }
+
+  .composer {
+    display: flex; gap: 8px; padding: 10px 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--line); background: var(--paper); flex-shrink: 0;
+  }
+  .composer input {
+    flex: 1 1 auto; border: 1px solid var(--line); border-radius: 100px;
+    padding: 10px 14px; font-size: 13.5px; font-family: 'Work Sans', sans-serif;
+    background: var(--ivory); color: var(--ink); min-width: 0;
+  }
+  .composer input:focus-visible { outline: 2px solid var(--pink); outline-offset: 1px; }
+  .composer button {
+    width: 38px; height: 38px; border-radius: 50%; border: none; flex-shrink: 0;
+    background: var(--pink); color: #fff; display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .composer button:hover { background: var(--yellow-deep); }
+  .composer button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Work+Sans:wght@400;500;600&display=swap">
+
+<div class="page">
+
+  <div class="intro">
+    <span class="eyebrow">Protótipo &middot; MVP</span>
+    <h1>Testando o assistente da Ranny Banana ao vivo</h1>
+    <p>Isso é um protótipo funcional: digite uma pergunta como um cliente faria e veja o assistente responder com o cardápio real da Ranny Banana &mdash; preços, sabores esgotados e horário de funcionamento.</p>
+    <div class="chips" id="chips"></div>
+    <div class="note">Se o assistente não souber responder algo, ele avisa e encaminha para a Ranny &mdash; nunca inventa preço, sabor ou informação. Dados de cardápio coletados em set/2026, só pra essa demonstração.</div>
+  </div>
+
+  <div class="phone">
+    <div class="screen">
+      <div class="chat-header">
+        <div class="avatar">R</div>
+        <div>
+          <div class="who">Ranny Banana</div>
+          <div class="status"><span class="dot"></span>assistente virtual · online</div>
+        </div>
+      </div>
+      <div class="messages" id="messages"></div>
+      <div class="suggestions" id="suggestions"></div>
+      <form class="composer" id="composer">
+        <input id="input" type="text" placeholder="Escreva uma mensagem..." autocomplete="off" aria-label="Sua mensagem">
+        <button type="submit" aria-label="Enviar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 11L21 3L13 21L11 13L3 11Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>
+        </button>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  var menu = {
+    tortas: [
+      { name: "Torta de Banana", price: 15, sold_out: false },
+      { name: "Torta de Abacaxi", price: 15, sold_out: true },
+      { name: "Torta de Ameixa", price: 15, sold_out: false }
+    ],
+    miniVulcao: [
+      { name: "Mini Vulcão Dois Amores", price: 18 },
+      { name: "Mini Vulcão Romeu e Julieta", price: 25 },
+      { name: "Mini Vulcão Chocolate Branco", price: 18 },
+      { name: "Mini Vulcão Olho de Sogra", price: 23 },
+      { name: "Mini Vulcão Ninho com Geleia de Morango", price: 22 },
+      { name: "Mini Vulcão Kinder Bueno", price: 22 },
+      { name: "Mini Vulcão Crocante de Amendoim", price: 20 },
+      { name: "Mini Vulcão Cocada Cremosa", price: 18 },
+      { name: "Mini Vulcão de Chocolate", price: 20 },
+      { name: "Mini Vulcão de Ninho com Nutella", price: 20 },
+      { name: "Mini Vulcão Ferrero Rocher", price: 22 },
+      { name: "Mini Vulcão Abacaxi com Coco", price: 18 }
+    ],
+    boloCaseiro: [
+      { name: "Bolo Caseiro Dois Amores", price: 65 },
+      { name: "Bolo Caseiro Cocada Cremosa", price: 65 },
+      { name: "Bolo Caseiro Olho de Sogra", price: 70 },
+      { name: "Bolo Caseiro Abacaxi com Coco", price: 70 }
+    ],
+    kitTpm: { name: "Kit TPM", price: 39.9, promo: true, oldPrice: 46.9, desc: "2 tortas (banana ou ameixa) + 1 bolo de pote super recheado" }
+  };
+
+  // Every currently discounted item lives here — the bot checks this list
+  // whenever it greets someone or is asked about promotions, so a promo
+  // never has to be typed twice into two different places.
+  var promotions = [menu.kitTpm];
+
+  var hoursText = "A gente funciona:\nTerça a sexta, das 14h30 às 17h\nSábado e domingo, das 10h às 17h";
+  var addressText = "Estamos na Unidade 203, bairro Cidade Operária. O pedido é feito por aqui mesmo, combinamos a entrega depois de confirmar.";
+
+  // Weekly schedule used to figure out if we're open right now and, if not,
+  // when the next opening is — so an order placed outside hours can be
+  // scheduled for Ranny to see the next time she opens, instead of just
+  // silently accepted as if someone were watching.
+  var dayNames = ["domingo", "segunda", "terça", "quarta", "quinta", "sexta", "sábado"];
+  var schedule = [
+    { open: 10, close: 17 },   // domingo
+    null,                      // segunda — fechado
+    { open: 14.5, close: 17 }, // terça
+    { open: 14.5, close: 17 }, // quarta
+    { open: 14.5, close: 17 }, // quinta
+    { open: 14.5, close: 17 }, // sexta
+    { open: 10, close: 17 }    // sábado
+  ];
+
+  function formatHour(h) {
+    var hh = Math.floor(h);
+    var mm = Math.round((h - hh) * 60);
+    return hh + (mm ? "h" + (mm < 10 ? "0" + mm : mm) : "h");
+  }
+
+  function isOpenNow(date) {
+    date = date || new Date();
+    var h = schedule[date.getDay()];
+    if (!h) return false;
+    var hour = date.getHours() + date.getMinutes() / 60;
+    return hour >= h.open && hour < h.close;
+  }
+
+  function nextOpening(date) {
+    date = date || new Date();
+    var day = date.getDay();
+    var hour = date.getHours() + date.getMinutes() / 60;
+    var today = schedule[day];
+    if (today && hour < today.open) {
+      return "hoje, a partir das " + formatHour(today.open);
+    }
+    for (var i = 1; i <= 7; i++) {
+      var d = (day + i) % 7;
+      var h = schedule[d];
+      if (h) {
+        var label = i === 1 ? "amanhã" : dayNames[d];
+        return label + ", a partir das " + formatHour(h.open);
+      }
+    }
+    return "no próximo horário de atendimento";
+  }
+
+  function hoursReply() {
+    if (isOpenNow()) {
+      return "Estamos abertos agora! " + hoursText;
+    }
+    return "No momento estamos fora do horário de atendimento. " + hoursText + "\n\nSe quiser, pode já deixar seu pedido anotado aqui que a Ranny vê assim que abrir " + nextOpening() + ".";
+  }
+
+  var allItems = [].concat(menu.tortas, menu.miniVulcao, menu.boloCaseiro, [menu.kitTpm]);
+
+  function promoLine(p) {
+    return p.name + (p.desc ? " (" + p.desc + ")" : "") + ": " + fmt(p.price) + " — de " + fmt(p.oldPrice);
+  }
+
+  function promoBlurb() {
+    if (!promotions.length) return "";
+    return "Hoje tem promoção! " + promotions.map(promoLine).join("; ") + ".";
+  }
+
+  // Conversation state: what's in the cart, and any item awaiting a yes/no.
+  var state = { cart: [], pendingConfirm: null, pendingAmbiguous: null };
+
+  function norm(s) {
+    return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+  }
+
+  function fmt(n) {
+    return "R$ " + n.toFixed(2).replace(".", ",");
+  }
+
+  function shortName(it, category) {
+    return norm(it.name)
+      .replace("mini vulcao ", "")
+      .replace("torta de ", "")
+      .replace("bolo caseiro ", "");
+  }
+
+  // Returns { item } for a single clear match, { options: [...] } when the
+  // text could mean more than one real product (never guesses between them),
+  // or null when nothing in the real menu matches.
+  function findItem(text) {
+    var t = norm(text);
+    var fullMatches = allItems.filter(function (it) { return t.indexOf(norm(it.name)) !== -1; });
+    if (fullMatches.length === 1) return { item: fullMatches[0] };
+    if (fullMatches.length > 1) return { options: fullMatches };
+
+    var shortMatches = allItems.filter(function (it) {
+      var s = shortName(it);
+      return s.length > 3 && t.indexOf(s) !== -1;
+    });
+    if (shortMatches.length === 1) return { item: shortMatches[0] };
+    if (shortMatches.length > 1) return { options: shortMatches };
+    return null;
+  }
+
+  function itemLine(it) {
+    var status = it.sold_out ? " — no momento esgotada" : "";
+    return it.name + ": " + fmt(it.price) + status;
+  }
+
+  function cartTotal() {
+    return state.cart.reduce(function (sum, it) { return sum + it.price; }, 0);
+  }
+
+  function addToCart(item) {
+    state.cart.push(item);
+    var lines = state.cart.map(function (it, i) { return (i + 1) + "x " + it.name + " — " + fmt(it.price); });
+    return "Anotado: " + item.name + " (" + fmt(item.price) + ").\n\nSeu pedido até agora:\n" + lines.join("\n") + "\n\nTotal: " + fmt(cartTotal()) + "\n\nQuer mais alguma coisa ou já fecho o pedido?";
+  }
+
+  var orderSiteUrl = "https://instadelivery.com.br/rannybanana";
+
+  function closeOrder() {
+    var lines = state.cart.map(function (it, i) { return (i + 1) + "x " + it.name + " — " + fmt(it.price); });
+    var total = cartTotal();
+    var schedNote = isOpenNow()
+      ? ""
+      : "\n\nEstamos fora do horário de atendimento agora, mas já deixei seu pedido anotado — a Ranny vai ver assim que abrir " + nextOpening() + ".";
+    var msg = "Perfeito, aqui está o resumo do seu pedido:\n\n" + lines.join("\n") + "\n\nTotal: " + fmt(total) + schedNote + "\n\nPra finalizar e pagar, é só concluir por aqui: " + orderSiteUrl + "\n\nLeva esse resumo com você que fica mais rápido 😊";
+    state.cart = [];
+    return msg;
+  }
+
+  var addIntent = /\b(quero|queria|vou querer|vou de|vou querer|manda|manda ver|adiciona|adicionar|coloca|bota|poe|põe|pode ser|me ve|me vê|add|eu quero|eu vou)\b/;
+  var confirmWords = /\b(sim|sim por favor|pode|pode sim|pode ser|isso|isso mesmo|isso ai|confirma|confirmar|anota|anotar|anotado|deixa anotado|pode deixar|pode confirmar|ok|okay|okey|beleza|claro|com certeza|exatamente|fechado|combinado|show|blz|uhum|aham)\b/;
+  var closeWords = /\b(fechar|finalizar|finaliza|so isso|é so isso|so isso mesmo|fecha o pedido|pode fechar|nada mais|mais nada|so isso por hoje|pode fechar o pedido)\b/;
+  var totalWords = /(quanto (ta|esta|está) dando|quanto fica|quanto ficou|quanto vai dar|quanto deu|valor total|total do pedido|qual o total|quanto e tudo|quanto é tudo)/;
+  var promoWords = /(promocao|promocoes|oferta|ofertas|desconto|descontos|tem algo em promocao|algo em oferta)/;
+
+  // Handles a message like "quero também um Olho de Sogra": it both confirms
+  // whatever the bot last asked about AND introduces something new. The
+  // pending item is logged first, then the rest of the message is parsed
+  // fresh — but only ONE "yes" is ever consumed per message, so a plain
+  // "sim" never gets read twice and accidentally closes the whole order.
+  function categoryOf(item) {
+    var n = norm(item.name);
+    if (n.indexOf("mini vulcao") === 0) return "mini vulcao";
+    if (n.indexOf("bolo caseiro") === 0) return "bolo caseiro";
+    if (n.indexOf("torta de") === 0) return "torta";
+    return null;
+  }
+
+  function reply(raw) {
+    var t = norm(raw);
+    var foundNow = findItem(t);
+    var prefix = "";
+    var confirmedPending = false;
+
+    // Resolve "o mini vulcão" / "o bolo caseiro" when it answers a pending
+    // "which one of these two did you mean" question.
+    if (!foundNow && state.pendingAmbiguous) {
+      var picked = state.pendingAmbiguous.filter(function (opt) {
+        var c = categoryOf(opt);
+        return c && t.indexOf(c) !== -1;
+      });
+      if (picked.length === 1) {
+        foundNow = { item: picked[0] };
+        state.pendingAmbiguous = null;
+      }
+    }
+
+    if (state.pendingConfirm && (confirmWords.test(t) || /\btambem\b/.test(t) || addIntent.test(t))) {
+      var justAdded = state.pendingConfirm;
+      state.cart.push(justAdded);
+      state.pendingConfirm = null;
+      confirmedPending = true;
+      prefix = "Anotado: " + justAdded.name + " (" + fmt(justAdded.price) + ").\n\n";
+    }
+
+    if (confirmedPending && !foundNow) {
+      // Nothing else in the message besides the "yes" — show the running order.
+      var lines = state.cart.map(function (it, i) { return (i + 1) + "x " + it.name + " — " + fmt(it.price); });
+      return prefix + "Seu pedido até agora:\n" + lines.join("\n") + "\n\nTotal: " + fmt(cartTotal()) + "\n\nQuer mais alguma coisa ou já fecho o pedido?";
+    }
+
+    return prefix + coreReply(t, confirmedPending, foundNow);
+  }
+
+  function coreReply(t, confirmAlreadyHandled, preResolved) {
+    // Closing the order takes priority whenever there's something to close.
+    if (closeWords.test(t) && state.cart.length > 0) {
+      state.pendingConfirm = null;
+      return closeOrder();
+    }
+
+    // "quanto tá dando tudo?" — show the running total without touching the cart.
+    if (totalWords.test(t)) {
+      if (state.cart.length === 0) return "Seu pedido ainda tá vazio! Quer que eu comece a anotar alguma coisa?";
+      var runningLines = state.cart.map(function (it, i) { return (i + 1) + "x " + it.name + " — " + fmt(it.price); });
+      return "Seu pedido até agora:\n" + runningLines.join("\n") + "\n\nTotal: " + fmt(cartTotal()) + "\n\nQuer mais alguma coisa ou já fecho o pedido?";
+    }
+
+    if (promoWords.test(t)) {
+      var promoItem = promotions[0];
+      state.pendingConfirm = promoItem || null;
+      return promoBlurb() + " Quer que eu já deixe anotado?";
+    }
+
+    var found = preResolved || findItem(t);
+
+    if (found && found.options) {
+      state.pendingAmbiguous = found.options;
+      state.pendingConfirm = null;
+      return "Temos mais de um assim: " + found.options.map(function (o) { return o.name + " (" + fmt(o.price) + ")"; }).join(" ou ") + ". Qual dos dois você quer?";
+    }
+
+    if (found && found.item) {
+      var item = found.item;
+      state.pendingAmbiguous = null;
+      if (item.sold_out) {
+        state.pendingConfirm = null;
+        return item.name + " está esgotada no momento. Posso sugerir a de Banana ou de Ameixa, R$ 15,00 cada.";
+      }
+      var priceLine = item.promo
+        ? item.desc + ", por " + fmt(item.price) + " (de " + fmt(item.oldPrice) + ")."
+        : item.name + " está " + fmt(item.price) + ".";
+      if (addIntent.test(t) || confirmWords.test(t)) {
+        state.pendingConfirm = null;
+        return addToCart(item);
+      }
+      state.pendingConfirm = item;
+      return priceLine + " Quer que eu já deixe anotado o seu pedido?";
+    }
+
+    // A bare "sim", "pode anotar" etc. resolves whatever was left open —
+    // but only if this message's own confirmation hasn't already been used above.
+    if (confirmWords.test(t) && !confirmAlreadyHandled) {
+      if (state.pendingConfirm) {
+        var pending = state.pendingConfirm;
+        state.pendingConfirm = null;
+        return addToCart(pending);
+      }
+      if (state.cart.length > 0) {
+        return closeOrder();
+      }
+      return "Só pra eu confirmar certinho: qual item você quer que eu anote?";
+    }
+
+    if (/(horario|funciona|aberto|fecha|atende|abrem|abre|que horas|fecham)/.test(t)) {
+      return hoursReply();
+    }
+    if (/(endereco|localizacao|onde fica|onde e|onde voces ficam|local|ponto de referencia)/.test(t)) {
+      return addressText;
+    }
+    if (/(cardapio|menu|opcoes|o que tem|o que voces tem|o que voces vendem|quais sabores|tem o que)/.test(t)) {
+      return "Temos:\nTortas (R$ 15,00)\nMini Vulcão (R$ 18,00 a R$ 25,00, mais de 10 sabores)\nKit TPM (R$ 39,90)\nBolo Caseiro (R$ 65,00 a R$ 70,00)\n\nQuer que eu liste os sabores de algum desses?";
+    }
+    if (/mini vulcao/.test(t)) {
+      return "Sabores de Mini Vulcão:\n" + menu.miniVulcao.map(function (i) { return "• " + i.name.replace("Mini Vulcão ", "") + " — " + fmt(i.price); }).join("\n");
+    }
+    if (/torta/.test(t)) {
+      return menu.tortas.map(itemLine).join("\n");
+    }
+    if (/bolo caseiro/.test(t)) {
+      return menu.boloCaseiro.map(itemLine).join("\n");
+    }
+
+    if (/\b(oi|ola|opa|eae|e ai|bom dia|boa tarde|boa noite)\b/.test(t)) {
+      var promo = promoBlurb();
+      var closedNote = isOpenNow() ? "" : " Ah, e já aviso: estamos fora do horário de atendimento agora (abrimos " + nextOpening() + "), mas pode deixar seu pedido anotado que a Ranny vê assim que abrir.";
+      return "Oi! Seja bem-vindo(a) à Ranny Banana." + (promo ? " " + promo : "") + closedNote + " Posso te mostrar o cardápio, os horários ou já anotar um pedido. O que você procura?";
+    }
+
+    var hint = state.cart.length > 0 ? " Se quiser, é só dizer \"fechar pedido\" que eu já envio o que você escolheu até agora." : "";
+    return "Ainda não tenho essa informação certinha aqui comigo — vou chamar a Ranny pra te responder!" + hint;
+  }
+
+  var messagesEl = document.getElementById("messages");
+  var suggestionsEl = document.getElementById("suggestions");
+  var chipsEl = document.getElementById("chips");
+  var form = document.getElementById("composer");
+  var input = document.getElementById("input");
+
+  var starterQuestions = [
+    "Vocês tem torta de abacaxi?",
+    "Quanto é o Mini Vulcão Ferrero Rocher?",
+    "Que horas vocês abrem?",
+    "O que vem no Kit TPM?",
+    "Qual o endereço?"
+  ];
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+
+  // Turns a plain-text bot reply into safe HTML with any http(s) link made
+  // clickable — the closing message includes a link to the ordering site.
+  function linkify(text) {
+    return escapeHtml(text).replace(/(https?:\/\/[^\s]+)/g, function (url) {
+      return '<a href="' + url + '" target="_blank" rel="noopener">' + url + '</a>';
+    });
+  }
+
+  function addMessage(text, who) {
+    var el = document.createElement("div");
+    el.className = "msg " + who;
+    el.innerHTML = linkify(text);
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return el;
+  }
+
+  function showTyping() {
+    var el = document.createElement("div");
+    el.className = "msg bot typing";
+    el.innerHTML = "<span></span><span></span><span></span>";
+    messagesEl.appendChild(el);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return el;
+  }
+
+  function send(text) {
+    text = text.trim();
+    if (!text) return;
+    addMessage(text, "user");
+    input.value = "";
+    var typingEl = showTyping();
+    var delay = 500 + Math.random() * 500;
+    setTimeout(function () {
+      typingEl.remove();
+      addMessage(reply(text), "bot");
+    }, delay);
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    send(input.value);
+  });
+
+  function renderChips(container, className, onClick) {
+    starterQuestions.forEach(function (q) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = className;
+      b.textContent = q;
+      b.addEventListener("click", function () { onClick(q); });
+      container.appendChild(b);
+    });
+  }
+
+  renderChips(suggestionsEl, "sugg", function (q) { send(q); input.focus(); });
+  renderChips(chipsEl, "chip", function (q) { send(q); input.focus(); });
+
+  var welcomePromo = promoBlurb();
+  var welcomeClosedNote = isOpenNow() ? "" : " Ah, e já aviso: estamos fora do horário de atendimento agora (abrimos " + nextOpening() + "), mas pode deixar seu pedido anotado que a Ranny vê assim que abrir.";
+  addMessage("Oi! Seja bem-vindo(a) à Ranny Banana." + (welcomePromo ? " " + welcomePromo : "") + welcomeClosedNote + " Posso te mostrar o cardápio, os horários ou já anotar um pedido. O que você procura?", "bot");
+})();
+</script>
