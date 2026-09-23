@@ -319,8 +319,19 @@
   // Conversation state: what's in the cart, and any item awaiting a yes/no.
   var state = { cart: [], pendingConfirm: null, pendingAmbiguous: null };
 
+  // Common typos/autocorrect slips people actually type (e.g. "mine vulc\u00e3o"
+  // instead of "mini vulc\u00e3o") get corrected here, once, right after
+  // normalizing \u2014 every matcher below reads the corrected text.
+  function fixTypos(s) {
+    return s
+      .replace(/\bmine\b/g, "mini")
+      .replace(/\bminivulcao\b/g, "mini vulcao")
+      .replace(/\bmim vulcao\b/g, "mini vulcao");
+  }
+
   function norm(s) {
-    return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    var t = s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    return fixTypos(t);
   }
 
   function fmt(n) {
